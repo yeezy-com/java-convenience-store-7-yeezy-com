@@ -1,6 +1,8 @@
 package store.config;
 
 import java.util.List;
+import store.controller.ConvenienceInputIterator;
+import store.controller.InputIterator;
 import store.domain.Convenience;
 import store.domain.Inventory;
 import store.domain.Product;
@@ -20,6 +22,8 @@ public class ConvenienceConfig {
     private Inventory inventory;
     private Convenience convenience;
     private ConvenienceController convenienceController;
+    private InputIterator inputIterator;
+    private ConvenienceInputIterator convenienceInputIterator;
 
     public InputView inputView() {
         if (inputView == null) {
@@ -55,9 +59,23 @@ public class ConvenienceConfig {
         return convenience;
     }
 
+    public InputIterator inputIterator() {
+        if (this.inputIterator == null) {
+            this.inputIterator = new InputIterator(outputView());
+        }
+        return inputIterator;
+    }
+
+    public ConvenienceInputIterator convenienceInputIterator() {
+        if (this.convenienceInputIterator == null) {
+            this.convenienceInputIterator = new ConvenienceInputIterator(inputIterator(), inputView());
+        }
+        return convenienceInputIterator;
+    }
+
     public ConvenienceController convenienceController() {
         if (this.convenienceController == null) {
-            this.convenienceController = new ConvenienceController(outputView(), convenience());
+            this.convenienceController = new ConvenienceController(outputView(), convenience(), convenienceInputIterator());
         }
         return convenienceController;
     }

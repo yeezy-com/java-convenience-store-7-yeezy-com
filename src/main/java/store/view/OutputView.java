@@ -21,7 +21,12 @@ public class OutputView {
         List<Product> products = inventory.getProducts();
         for (Product product : products) {
             System.out.print("- ");
-            System.out.printf("%s %,d원 %d개 %s%n", product.getName(), product.getPrice(), product.getCount(), product.getPromotion());
+            System.out.printf("%s %,d원", product.getName(), product.getPrice());
+            if (product.getCount() > 0) {
+                System.out.printf(" %d개 %s%n", product.getCount(), product.getPromotion());
+                continue;
+            }
+            System.out.printf(" %s %s%n", "재고 없음", product.getPromotion());
         }
         System.out.printf("%n");
     }
