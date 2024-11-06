@@ -1,10 +1,12 @@
 package store;
 
-import store.domain.Convenience;
+import store.config.ConvenienceConfig;
+import store.controller.ConvenienceController;
 
 public class Application {
     public static void main(String[] args) {
-        Convenience convenience = new Convenience();
-        convenience.run();
+        ConvenienceConfig config = new ConvenienceConfig();
+        ConvenienceController convenienceController = config.convenienceController();
+        convenienceController.run();
     }
 }

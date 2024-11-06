@@ -1,11 +1,10 @@
 package store.domain;
 
 public class Product {
-
-    private final String name;
-    private final int price;
-    private final int count;
-    private final String promotion;
+    String name;
+    int price;
+    int count;
+    String promotion;
 
     public Product(String name, int price, int count, String promotion) {
         this.name = name;
@@ -18,12 +17,12 @@ public class Product {
         return name;
     }
 
-    public int getPrice() {
-        return price;
-    }
-
     public int getCount() {
         return count;
+    }
+
+    public int getPrice() {
+        return price;
     }
 
     public String getPromotion() {

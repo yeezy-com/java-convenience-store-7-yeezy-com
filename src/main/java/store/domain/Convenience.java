@@ -1,26 +1,14 @@
 package store.domain;
 
-import java.util.List;
-import store.StringsToProductsParser;
-import store.file.ProductFileReader;
-import store.view.InputView;
-import store.view.OutputView;
-
 public class Convenience {
 
-    private final StringsToProductsParser parser = new StringsToProductsParser();
-    private ProductFileReader productFileReader;
-    private final OutputView outputView = new OutputView();
-    private final InputView inputView = new InputView();
+    private final Inventory inventory;
 
-    public void run() {
-        outputView.printWelcomeMessage();
+    public Convenience(Inventory inventory) {
+        this.inventory = inventory;
+    }
 
-        productFileReader = new ProductFileReader("src/main/resources/products.md");
-        List<String> read = productFileReader.read();
-        Products products = parser.parser(read);
-
-        outputView.printProducts(products);
-
+    public Inventory getInventory() {
+        return inventory;
     }
 }
