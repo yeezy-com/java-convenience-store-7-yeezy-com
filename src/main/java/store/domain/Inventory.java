@@ -12,6 +12,14 @@ public class Inventory {
         this.products = products;
     }
 
+    public boolean contain(String name) {
+        Optional<Product> stuff = products.stream()
+                .filter(product -> name.equals(product.getName()))
+                .findFirst();
+
+        return stuff.isPresent();
+    }
+
     public boolean isAvailable(String name, int count) {
         Optional<Product> stuff = products.stream()
                 .filter(product -> name.equals(product.getName()))

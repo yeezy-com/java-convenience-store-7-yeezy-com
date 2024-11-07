@@ -27,9 +27,9 @@ public class ConvenienceInputIterator {
                 String productName = parts[0];
                 int productCount = Integer.parseInt(parts[1]);
 
-            products.add(new BuyingProduct(productName, productCount));
-        }
-        return products;
+                validateProductContainInInventory(inventory, productName);
+                validateStockCountInInventory(inventory, productName, productCount);
+
                 Product contain = inventory.getContain(productName);
                 products.add(new BuyingProduct(productName, productCount, contain.getPrice()));
             }
@@ -47,5 +47,24 @@ public class ConvenienceInputIterator {
         return answer;
     }
 
+    private void validateProductContainInInventory(Inventory inventory, String productName) {
+        if (inventory.contain(productName)) {
+            return;
+        }
+        throw new IllegalArgumentException("존재하지 않는 상품입니다. 다시 입력해 주세요.");
+    }
+
+    private void validateStockCountInInventory(Inventory inventory, String productName, int productCount) {
+        if (inventory.isAvailable(productName, productCount)) {
+            return;
+        }
+        throw new IllegalArgumentException("재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+    }
+
+    private void validateYorN(String ans) {
+        if (ans.equals("Y") || ans.equals("N")) {
+            return;
+        }
+        throw new IllegalArgumentException("잘못된 입력입니다. 다시 입력해 주세요.");
     }
 }
