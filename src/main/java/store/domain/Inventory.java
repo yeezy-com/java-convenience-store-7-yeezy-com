@@ -2,6 +2,7 @@ package store.domain;
 
 import java.util.List;
 import java.util.Optional;
+import store.dto.BuyingProduct;
 
 public class Inventory {
 
@@ -12,12 +13,11 @@ public class Inventory {
     }
 
     public boolean isAvailable(String name, int count) {
-        Optional<Product> first = products.stream()
+        Optional<Product> stuff = products.stream()
                 .filter(product -> name.equals(product.getName()))
                 .findFirst();
 
-        return first.filter(product -> product.getCount() >= count).isPresent();
-
+        return stuff.filter(product -> product.getCount() >= count).isPresent();
     }
 
     public void remove(String name, int count) {
@@ -32,5 +32,28 @@ public class Inventory {
 
     public List<Product> getProducts() {
         return products;
+    }
+
+    public Product getContain(String productName) {
+        return products.stream()
+                .filter(product -> productName.equals(product.getName()))
+                .findFirst()
+                .get();
+    }
+
+    public void popStuffCount(Receipt buyingProducts) {
+        for (BuyingProduct buyingProduct : buyingProducts.getProducts()) {
+            Product stuff = products.stream()
+                    .filter(product -> product.name.equals(buyingProduct.name()))
+                    .findFirst()
+                    .get();
+
+            if (stuff.isAvailable(buyingProduct.count())) {
+                stuff.count -= buyingProduct.count();
+                continue;
+            }
+
+            throw new IllegalArgumentException("재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+        }
     }
 }

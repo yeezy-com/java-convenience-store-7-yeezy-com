@@ -28,4 +28,8 @@ public class Product {
     public String getPromotion() {
         return promotion;
     }
+
+    public boolean isAvailable(int count) {
+        return count <= this.count;
+    }
 }

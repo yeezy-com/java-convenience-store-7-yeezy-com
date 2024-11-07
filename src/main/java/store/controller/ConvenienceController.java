@@ -1,8 +1,7 @@
 package store.controller;
 
-import java.util.List;
 import store.domain.Convenience;
-import store.dto.BuyingProduct;
+import store.domain.Receipt;
 import store.view.OutputView;
 
 public class ConvenienceController {
@@ -21,7 +20,10 @@ public class ConvenienceController {
         outputView.printWelcomeMessage();
         outputView.printProducts(convenience.getInventory());
 
-        List<BuyingProduct> buyingProducts = convenienceInputIterator.buyingProductInput();
-        convenience.sellProduct(buyingProducts);
+        Receipt receipt = convenienceInputIterator.buyingProductInput(convenience.getInventory());
+        convenience.sellProduct(receipt);
+        String answer = convenienceInputIterator.membershipAskInput();
+        convenience.membershipDiscount(answer, receipt);
+        outputView.printReceipt(receipt);
     }
 }

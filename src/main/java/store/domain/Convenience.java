@@ -26,6 +26,10 @@ public class Convenience {
             if (stuff.count >= buyingProduct.count()) {
                 stuff.count -= buyingProduct.count();
             }
+    public void sellProduct(Receipt buyingProducts) {
+        inventory.popStuffCount(buyingProducts);
+    }
+
         }
     }
 }
