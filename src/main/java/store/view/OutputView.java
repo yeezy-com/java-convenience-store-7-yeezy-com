@@ -3,6 +3,8 @@ package store.view;
 import java.util.List;
 import store.domain.Inventory;
 import store.domain.Product;
+import store.domain.Receipt;
+import store.dto.BuyingProduct;
 
 /**
  * 출력을 보여주는 일 담당 클래스
@@ -33,5 +35,19 @@ public class OutputView {
 
     public void printErrorMessage(Exception e) {
         System.out.println(ERROR_PRIFIX + e.getMessage());
+    }
+
+    public void printReceipt(Receipt receipt) {
+        System.out.println("===========W 편의점============");
+        System.out.printf("%-10s\t%5s\t%6s%n", "상품명", "수량", "금액");
+        for (BuyingProduct buyingProduct : receipt.getProducts()) {
+            System.out.printf("%-10s\t%,5d\t%,10d%n", buyingProduct.name(), buyingProduct.count(), buyingProduct.count() * buyingProduct.price());
+        }
+        System.out.println("===========증   정=============");
+        System.out.println("==============================");
+        System.out.printf("%-10s %5d %,11d%n", "총구매액", 10, 10000);
+        System.out.printf("%-20s %,-20d%n", "행사할인", -2000);
+        System.out.printf("%-20s %,-20d%n", "멤버십할인", -0);
+        System.out.printf("%-20s %,-20d%n", "내실돈", receipt.getDiscountPrice());
     }
 }

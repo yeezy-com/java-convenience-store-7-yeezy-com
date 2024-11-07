@@ -37,4 +37,15 @@ public class ConvenienceInputIterator {
         });
         return new Receipt(buyingProducts);
     }
+
+    public String membershipAskInput() {
+        String answer = inputIterator.retryUntilSuccess(() -> {
+            String ans = inputView.readMembershipAsk();
+            validateYorN(ans);
+            return ans;
+        });
+        return answer;
+    }
+
+    }
 }
