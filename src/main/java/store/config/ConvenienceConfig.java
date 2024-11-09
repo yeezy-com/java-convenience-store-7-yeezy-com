@@ -1,82 +1,150 @@
 package store.config;
 
-import java.util.List;
+import camp.nextstep.edu.missionutils.DateTimes;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import store.controller.Convenience;
+import store.domain.Date;
+import store.util.FileConverter;
+import store.util.MdFileReader;
 import store.controller.ConvenienceInputIterator;
 import store.controller.InputIterator;
-import store.domain.Convenience;
-import store.domain.Inventory;
-import store.domain.Product;
-import store.controller.ConvenienceController;
-import store.file.MdFileReader;
-import store.parser.ProductParser;
+import store.domain.seller.Pos;
+import store.domain.seller.Seller;
+import store.domain.inventory.Inventory;
+import store.domain.product.FileFactory;
+import store.domain.promotion.PromotionManager;
 import store.view.InputView;
+import store.view.InventoryOutputView;
 import store.view.OutputView;
+import store.view.ReceiptOutputView;
 
 public class ConvenienceConfig {
 
-    private final MdFileReader fileReader = new MdFileReader();
-    private final ProductParser productParser = new ProductParser();
-
     private InputView inputView;
     private OutputView outputView;
-    private Inventory inventory;
-    private Convenience convenience;
-    private ConvenienceController convenienceController;
+    private ReceiptOutputView receiptOutputView;
+    private InventoryOutputView inventoryOutputView;
     private InputIterator inputIterator;
     private ConvenienceInputIterator convenienceInputIterator;
+    private MdFileReader mdFileReader;
+    private FileConverter fileConverter;
+    private FileFactory fileFactory;
+    private Convenience convenience;
 
-    public InputView inputView() {
-        if (inputView == null) {
+    private Date date;
+    private Seller seller;
+    private Inventory inventory;
+    private PromotionManager promotionManager;
+    private Pos pos;
+
+    private PromotionManager promotionManager() {
+        if (this.promotionManager == null) {
+            this.promotionManager = new PromotionManager(fileFactory().promotionsGetFromFile());
+        }
+        return this.promotionManager;
+    }
+
+    private Inventory inventory() {
+        if (this.inventory == null) {
+            this.inventory = new Inventory(fileFactory().productGetFromFile(promotionManager().getPromotions()));
+        }
+        return this.inventory;
+    }
+
+    private Pos pos() {
+        if (this.pos == null) {
+            this.pos = new Pos(promotionManager());
+        }
+        return this.pos;
+    }
+
+    private LocalDate now() {
+        return DateTimes.now().toLocalDate();
+    }
+
+    private Date date() {
+        if (this.date == null) {
+            this.date = new Date(now());
+        }
+        return this.date;
+    }
+
+    private Seller seller() {
+        if (this.seller == null) {
+            this.seller = new Seller(convenienceInputIterator(), pos(), date());
+        }
+        return this.seller;
+    }
+
+
+    private InputView inputView() {
+        if (this.inputView == null) {
             this.inputView = new InputView();
         }
-        return inputView;
+        return this.inputView;
     }
 
-    public OutputView outputView() {
-        if (outputView == null) {
-            this.outputView = new OutputView();
+    private ReceiptOutputView receiptOutputView() {
+        if (this.receiptOutputView == null) {
+            this.receiptOutputView = new ReceiptOutputView();
         }
-        return outputView;
+        return this.receiptOutputView;
     }
 
-    public Inventory inventory() {
-        if (this.inventory == null) {
-            this.inventory = createInventory();
+    private InventoryOutputView inventoryOutputView() {
+        if (this.inventoryOutputView == null) {
+            this.inventoryOutputView = new InventoryOutputView();
         }
-        return inventory;
+        return this.inventoryOutputView;
     }
 
-    private Inventory createInventory() {
-        List<String> rawProducts = fileReader.read("products.md");
-        List<Product> products = productParser.parse(rawProducts);
-        return new Inventory(products);
-    }
-
-    public Convenience convenience() {
-        if (this.convenience == null) {
-            this.convenience = new Convenience(inventory());
+    private OutputView outputView() {
+        if (this.outputView == null) {
+            this.outputView = new OutputView(receiptOutputView(), inventoryOutputView());
         }
-        return convenience;
+        return this.outputView;
     }
 
-    public InputIterator inputIterator() {
+    private InputIterator inputIterator() {
         if (this.inputIterator == null) {
             this.inputIterator = new InputIterator(outputView());
         }
         return inputIterator;
     }
 
-    public ConvenienceInputIterator convenienceInputIterator() {
+    private ConvenienceInputIterator convenienceInputIterator() {
         if (this.convenienceInputIterator == null) {
             this.convenienceInputIterator = new ConvenienceInputIterator(inputIterator(), inputView());
         }
-        return convenienceInputIterator;
+        return this.convenienceInputIterator;
     }
 
-    public ConvenienceController convenienceController() {
-        if (this.convenienceController == null) {
-            this.convenienceController = new ConvenienceController(outputView(), convenience(), convenienceInputIterator());
+    private MdFileReader mdFileReader() {
+        if (this.mdFileReader == null) {
+            this.mdFileReader = new MdFileReader();
         }
-        return convenienceController;
+        return this.mdFileReader;
+    }
+
+    private FileConverter fileConverter() {
+        if (this.fileConverter == null) {
+            this.fileConverter = new FileConverter();
+        }
+        return fileConverter;
+    }
+
+    private FileFactory fileFactory() {
+        if (this.fileFactory == null) {
+            this.fileFactory = new FileFactory(mdFileReader(), fileConverter());
+        }
+        return fileFactory;
+    }
+
+    public Convenience convenience() {
+        if (this.convenience == null) {
+            this.convenience = new Convenience(outputView(), seller(), inventory(), convenienceInputIterator());
+        }
+        return this.convenience;
     }
 }

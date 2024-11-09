@@ -1,12 +1,12 @@
 package store;
 
 import store.config.ConvenienceConfig;
-import store.controller.ConvenienceController;
+import store.controller.Convenience;
 
 public class Application {
     public static void main(String[] args) {
         ConvenienceConfig config = new ConvenienceConfig();
-        ConvenienceController convenienceController = config.convenienceController();
-        convenienceController.run();
+        Convenience convenience = config.convenience();
+        convenience.enter();
     }
 }
