@@ -1,36 +1,67 @@
 package store.domain;
 
 import java.util.List;
-import store.dto.BuyingProduct;
+import java.util.Map;
+import java.util.Map.Entry;
+import store.domain.inventory.CartItem;
 
 public class Receipt {
 
-    private List<BuyingProduct> products;
-    private int discountPrice;
+    private final List<CartItem> product;
+    private final Map<String, Integer> promotionCount;
+    private final int totalPrice;
+    private final int membershipDiscount;
 
-    public Receipt(List<BuyingProduct> products) {
-        this.products = products;
-        this.discountPrice = 0;
+    public Receipt(List<CartItem> product, Map<String, Integer> promotionCount, int membershipDiscount) {
+        this.product = product;
+        this.membershipDiscount = membershipDiscount;
+        this.promotionCount = promotionCount;
+        this.totalPrice = product.stream()
+                .mapToInt(CartItem::calculatePrice)
+                .sum();
+
     }
 
-    public int getDiscountPrice() {
-        return discountPrice;
-    }
-
-    public int totalPrice() {
+    public int totalPromotionPrice() {
         int sum = 0;
-        for (BuyingProduct product : products) {
-            sum += product.price() * product.count();
+        for (Entry<String, Integer> map : promotionCount.entrySet()) {
+            sum += product.stream()
+                    .mapToInt(cartItem -> getSum(cartItem, map.getValue()))
+                    .sum();
         }
-
         return sum;
     }
 
-    public List<BuyingProduct> getProducts() {
-        return products;
+    private int getSum(CartItem cartItem, int promotionCount) {
+        if (cartItem.hasPromotion()) {
+            return promotionCount * cartItem.getPrice();
+        }
+        return 0;
     }
 
-    public void setDiscountPrice(int price) {
-        this.discountPrice = price;
+    public List<CartItem> getProduct() {
+        return product;
+    }
+
+    public int getTotalPrice() {
+        return totalPrice;
+    }
+
+    public int getMembershipDiscount() {
+        return membershipDiscount;
+    }
+
+    public int getPromotionCount(String name) {
+        return promotionCount.getOrDefault(name, 0);
+    }
+
+    public boolean promotionContains(String name) {
+        return promotionCount.containsKey(name);
+    }
+
+    public int getTotalCount() {
+        return product.stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
     }
 }
