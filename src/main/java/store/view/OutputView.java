@@ -1,10 +1,7 @@
 package store.view;
 
-import java.util.List;
-import store.domain.Inventory;
-import store.domain.Product;
 import store.domain.Receipt;
-import store.dto.BuyingProduct;
+import store.domain.inventory.Inventory;
 
 /**
  * 출력을 보여주는 일 담당 클래스
@@ -12,42 +9,43 @@ import store.dto.BuyingProduct;
  */
 public class OutputView {
 
-    public static final String ERROR_PRIFIX = "[ERROR] ";
+    private static final String ERROR_PRIFIX = "[ERROR] ";
+
+    private static final String WELCOME_MESSAGE = "안녕하세요. W편의점입니다.%n";
+    private static final String INVENTORY_INSTRUCTION = "현재 보유하고 있는 상품입니다.%n";
+
+    public static final String NEW_LINE = "%n";
+    public static final String ERROR_MSG_FORMAT = "%s%s%n";
+
+    private final ReceiptOutputView receiptOutputView;
+    private final InventoryOutputView inventoryOutputView;
+
+    public OutputView(ReceiptOutputView receiptOutputView, InventoryOutputView inventoryOutputView) {
+        this.receiptOutputView = receiptOutputView;
+        this.inventoryOutputView = inventoryOutputView;
+    }
 
     public void printWelcomeMessage() {
-        System.out.printf("안녕하세요. W편의점입니다.%n");
-        System.out.printf("현재 보유하고 있는 상품입니다.%n%n");
+        System.out.printf(WELCOME_MESSAGE);
+        System.out.printf(INVENTORY_INSTRUCTION);
+        printNewLine();
     }
 
-    public void printProducts(Inventory inventory) {
-        List<Product> products = inventory.getProducts();
-        for (Product product : products) {
-            System.out.print("- ");
-            System.out.printf("%s %,d원", product.getName(), product.getPrice());
-            if (product.getCount() > 0) {
-                System.out.printf(" %d개 %s%n", product.getCount(), product.getPromotion());
-                continue;
-            }
-            System.out.printf(" %s %s%n", "재고 없음", product.getPromotion());
-        }
-        System.out.printf("%n");
-    }
-
-    public void printErrorMessage(Exception e) {
-        System.out.println(ERROR_PRIFIX + e.getMessage());
+    public void printHasProducts(Inventory inventory) {
+        inventoryOutputView.printHasProducts(inventory);
+        printNewLine();
     }
 
     public void printReceipt(Receipt receipt) {
-        System.out.println("===========W 편의점============");
-        System.out.printf("%-10s\t%5s\t%6s%n", "상품명", "수량", "금액");
-        for (BuyingProduct buyingProduct : receipt.getProducts()) {
-            System.out.printf("%-10s\t%,5d\t%,10d%n", buyingProduct.name(), buyingProduct.count(), buyingProduct.count() * buyingProduct.price());
-        }
-        System.out.println("===========증   정=============");
-        System.out.println("==============================");
-        System.out.printf("%-10s %5d %,11d%n", "총구매액", 10, 10000);
-        System.out.printf("%-20s %,-20d%n", "행사할인", -2000);
-        System.out.printf("%-20s %,-20d%n", "멤버십할인", -0);
-        System.out.printf("%-20s %,-20d%n", "내실돈", receipt.getDiscountPrice());
+        printNewLine();
+        receiptOutputView.printReceipt(receipt);
+    }
+
+    public void printErrorMessage(IllegalArgumentException e) {
+        System.out.printf(ERROR_MSG_FORMAT, ERROR_PRIFIX, e.getMessage());
+    }
+
+    public void printNewLine() {
+        System.out.printf(NEW_LINE);
     }
 }
