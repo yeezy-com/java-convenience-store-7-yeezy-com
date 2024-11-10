@@ -1,6 +1,7 @@
 package store.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import store.domain.inventory.CartItem;
 import store.domain.inventory.Inventory;
@@ -25,17 +26,25 @@ public class ConvenienceInputIterator {
     }
 
     public List<CartItem> buyingProductInput(Inventory inventory) {
-        List<CartItem> buyingProducts = inputIterator.retryUntilSuccess(() -> {
+        return inputIterator.retryUntilSuccess(() -> {
             String[] rawProducts = inputView.readItem().split(",", -1);
+            Arrays.stream(rawProducts)
+                    .forEach(this::validateFormat);
+            Arrays.stream(rawProducts)
+                    .forEach(this::validateIsBlank);
+
+
+
+
+
+
             List<CartItem> products = new ArrayList<>();
             for (String rawProduct : rawProducts) {
-                validateFormat(rawProduct);
-
                 String[] parts = rawProduct.substring(1, rawProduct.length() - 1).split("-", 2);
                 String productName = parts[0];
-                validateIsBlank(productName);
+                validateIsConvertNumber(parts[1]);
+                validateIsPositive(parts[1]);
                 int productCount = Integer.parseInt(parts[1]);
-
                 validateProductContainInInventory(inventory, productName);
                 validateStockCountInInventory(inventory, productName, productCount);
 
@@ -44,21 +53,6 @@ public class ConvenienceInputIterator {
             }
             return products;
         });
-        return buyingProducts;
-    }
-
-    private void validateIsBlank(String productName) {
-        if (productName.isBlank()) {
-            throw new IllegalArgumentException(WRONG_INPUT_ERR);
-        }
-    }
-
-    private void validateFormat(String rawProduct) {
-        if (rawProduct.startsWith(PRODUCT_BUY_INPUT_PREFIX) && rawProduct.endsWith(PRODUCT_BUY_INPUT_SUFFIX)
-        && rawProduct.contains(PRODUCT_BUY_DELIMITER)) {
-            return;
-        }
-        throw new IllegalArgumentException(NOT_ACCEPT_FORMAT);
     }
 
     public String readMembershipApply() {
@@ -91,6 +85,34 @@ public class ConvenienceInputIterator {
             validateYorN(ans);
             return ans;
         });
+    }
+
+    private void validateIsConvertNumber(String productCount) {
+        try {
+            Integer.parseInt(productCount);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(WRONG_INPUT_ERR);
+        }
+    }
+
+    private void validateIsPositive(String productCount) {
+        if (Integer.parseInt(productCount) <= 0) {
+            throw new IllegalArgumentException(WRONG_INPUT_ERR);
+        }
+    }
+
+    private void validateIsBlank(String productName) {
+        if (productName.isBlank()) {
+            throw new IllegalArgumentException(WRONG_INPUT_ERR);
+        }
+    }
+
+    private void validateFormat(String rawProduct) {
+        if (rawProduct.startsWith(PRODUCT_BUY_INPUT_PREFIX) && rawProduct.endsWith(PRODUCT_BUY_INPUT_SUFFIX)
+        && rawProduct.contains(PRODUCT_BUY_DELIMITER)) {
+            return;
+        }
+        throw new IllegalArgumentException(NOT_ACCEPT_FORMAT);
     }
 
     private void validateProductContainInInventory(Inventory inventory, String productName) {
