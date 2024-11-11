@@ -1,5 +1,6 @@
 package store.controller;
 
+import store.global.Answer;
 import store.domain.seller.Seller;
 import store.domain.inventory.Inventory;
 import store.view.OutputView;
@@ -25,7 +26,7 @@ public class Convenience {
             outputView.printHasProducts(inventory);
 
             outputView.printReceipt(seller.processPurchase(inventory));
-            if (convenienceInputIterator.readBuyAgain().equals("N")) {
+            if (convenienceInputIterator.readBuyAgain() == Answer.IS_NO) {
                 break;
             }
             outputView.printNewLine();

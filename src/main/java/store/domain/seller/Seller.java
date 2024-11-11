@@ -3,6 +3,7 @@ package store.domain.seller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import store.global.Answer;
 import store.domain.Date;
 import store.domain.Membership;
 import store.domain.Receipt;
@@ -79,7 +80,7 @@ public class Seller {
 
         int quantity = cartItem.getQuantity();
         if (quantity < product.getTotalStock() && quantity % promotionCount == promotion.getStandardCount()) {
-            if (convenienceInputIterator.readWantPromotion(product.getName()).equals("Y")) {
+            if (convenienceInputIterator.readWantPromotion(product.getName()) == Answer.IS_YES) {
                 quantity++;
                 cartItem.plusQuantity();
             }
@@ -101,8 +102,8 @@ public class Seller {
                 continue;
             }
 
-            String response = convenienceInputIterator.readPromotionNotApply(product.getName(), quantity);
-            if (response.equals("Y")) {
+            Answer response = convenienceInputIterator.readPromotionNotApply(product.getName(), quantity);
+            if (response == Answer.IS_YES) {
                 product.reduceRegularStock(quantity - product.getPromotionStock());
                 product.reducePromotionStock(product.getPromotionStock());
                 break;

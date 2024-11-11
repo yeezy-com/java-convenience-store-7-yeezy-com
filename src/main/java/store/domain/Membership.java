@@ -1,6 +1,7 @@
 package store.domain;
 
 import store.controller.ConvenienceInputIterator;
+import store.global.Answer;
 
 public class Membership {
 
@@ -15,13 +16,13 @@ public class Membership {
     }
 
     public int membershipProcess(int totalPrice, int promotionPrice) {
-        String membershipAnswer = convenienceInputIterator.readMembershipApply();
+        Answer membershipAnswer = convenienceInputIterator.readMembershipApply();
         return calculateMembershipDiscount(membershipAnswer, totalPrice, promotionPrice);
     }
 
-    public int calculateMembershipDiscount(String membership, int totalPrice, int promotionPrice) {
+    public int calculateMembershipDiscount(Answer membership, int totalPrice, int promotionPrice) {
         int membershipDiscount = 0;
-        if (membership.equals("Y")) {
+        if (membership == Answer.IS_YES) {
             membershipDiscount = applyMembershipDiscount(totalPrice - promotionPrice);
         }
         return membershipDiscount;
