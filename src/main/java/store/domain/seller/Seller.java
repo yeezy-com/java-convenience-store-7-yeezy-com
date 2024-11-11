@@ -86,14 +86,16 @@ public class Seller {
             }
         }
 
-        // 요청 수량보다 promotion 재고가 더 많은 경우
         if (product.getPromotionStock() >= quantity) {
             product.reducePromotionStock(quantity);
             return quantity / promotionCount;
         }
 
+        return promotionMoreThenInventoryProcess(cartItem, quantity, product, promotionCount);
+    }
+
+    private int promotionMoreThenInventoryProcess(CartItem cartItem, int quantity, Product product, int promotionCount) {
         int gift = 0;
-        // 요청 수량보다 promotion 재고가 더 작은 경우
         while (quantity > 0) {
             if (product.getPromotionStock() >= promotionCount) {
                 product.reducePromotionStock(promotionCount);

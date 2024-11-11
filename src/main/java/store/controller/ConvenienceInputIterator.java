@@ -14,6 +14,12 @@ public class ConvenienceInputIterator {
     public static final String PRODUCT_BUY_INPUT_PREFIX = "[";
     public static final String PRODUCT_BUY_INPUT_SUFFIX = "]";
     public static final String PRODUCT_BUY_DELIMITER = "-";
+    public static final int PRODUCT_NAME_START = 1;
+    public static final int DELIMITER_LIMIT = 2;
+    public static final int PRODUCT_SUFFIX_OFFSET = 1;
+    public static final String PRODUCTS_DELIMITER = ",";
+    public static final int PRODUCT_DELIMITER_LIMIT = -1;
+
     private final InputIterator inputIterator;
     private final InputView inputView;
 
@@ -24,34 +30,23 @@ public class ConvenienceInputIterator {
 
     public List<CartItem> buyingProductInput(Inventory inventory) {
         return inputIterator.retryUntilSuccess(() -> {
-            String[] rawProducts = inputView.readItem().split(",", -1);
+            String[] rawProducts = inputView.readItem().split(PRODUCTS_DELIMITER, PRODUCT_DELIMITER_LIMIT);
             validateFormat(rawProducts);
             return Arrays.stream(rawProducts)
-                    .map(rawProduct1 -> {
-                        String[] parts = rawProduct1.substring(1, rawProduct1.length() - 1).split("-", 2);
-                        String productName = parts[0];
-                        validateNumber(parts[1]);
-                        int productCount = Integer.parseInt(parts[1]);
-                        validateProductContainInInventory(inventory, productName);
-                        validateStockCountInInventory(inventory, productName, productCount);
-
-                        Product sellProduct1 = inventory.findByName(productName);
-                        return new CartItem(sellProduct1, productCount);
-                    })
+                    .map(rawProduct1 -> createCartItem(inventory, rawProduct1))
                     .toList();
         });
     }
 
-    private void validateFormat(String[] rawProducts) {
-        Arrays.stream(rawProducts)
-                .forEach(this::validateFormat);
-        Arrays.stream(rawProducts)
-                .forEach(this::validateIsBlank);
-    }
+    private CartItem createCartItem(Inventory inventory, String rawProduct1) {
+        String[] parts = rawProduct1.substring(PRODUCT_NAME_START, rawProduct1.length() - PRODUCT_SUFFIX_OFFSET).split(PRODUCT_BUY_DELIMITER, DELIMITER_LIMIT);
+        String productName = parts[0];
+        validateNumber(parts[1]);
+        int productCount = Integer.parseInt(parts[1]);
+        validateInventory(inventory, productName, productCount);
 
-    private void validateNumber(String rawNumber) {
-        validateIsConvertNumber(rawNumber);
-        validateIsPositive(rawNumber);
+        Product sellProduct1 = inventory.findByName(productName);
+        return new CartItem(sellProduct1, productCount);
     }
 
     public Answer readMembershipApply() {
@@ -84,6 +79,23 @@ public class ConvenienceInputIterator {
             validateYorN(ans);
             return Answer.of(ans);
         });
+    }
+
+    private void validateInventory(Inventory inventory, String productName, int productCount) {
+        validateProductContainInInventory(inventory, productName);
+        validateStockCountInInventory(inventory, productName, productCount);
+    }
+
+    private void validateFormat(String[] rawProducts) {
+        Arrays.stream(rawProducts)
+                .forEach(this::validateFormat);
+        Arrays.stream(rawProducts)
+                .forEach(this::validateIsBlank);
+    }
+
+    private void validateNumber(String rawNumber) {
+        validateIsConvertNumber(rawNumber);
+        validateIsPositive(rawNumber);
     }
 
     private void validateIsConvertNumber(String productCount) {
