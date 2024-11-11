@@ -2,7 +2,6 @@ package store.domain;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import store.domain.inventory.CartItem;
 
 public class Receipt {
@@ -23,13 +22,10 @@ public class Receipt {
     }
 
     public int totalPromotionPrice() {
-        int sum = 0;
-        for (Entry<String, Integer> map : promotionCount.entrySet()) {
-            sum += product.stream()
-                    .mapToInt(cartItem -> getSum(cartItem, map.getValue()))
-                    .sum();
-        }
-        return sum;
+        return product.stream()
+                .filter(CartItem::hasPromotion)
+                .mapToInt(cartItem -> getSum(cartItem, promotionCount.get(cartItem.getName())))
+                .sum();
     }
 
     private int getSum(CartItem cartItem, int promotionCount) {

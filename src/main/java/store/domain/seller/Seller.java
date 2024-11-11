@@ -3,6 +3,7 @@ package store.domain.seller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import store.domain.Date;
 import store.domain.Receipt;
 import store.controller.ConvenienceInputIterator;
@@ -28,8 +29,12 @@ public class Seller {
         int membershipDiscount = 0;
 
         Map<String, Integer> promotionCount = calculatePromotionCount(inventory, cartItems);
+        for (Entry<String, Integer> entry : promotionCount.entrySet()) {
+            System.out.println(entry.getKey() + " " + entry.getValue() + "개 구매");
+        }
 
         int totalPrice = calculateTotalPrice(cartItems);
+        System.out.println(totalPrice);
         String membershipAnswer = convenienceInputIterator.readMembershipApply();
         membershipDiscount = calculateMembershipDiscount(membershipAnswer, cartItems, promotionCount, membershipDiscount, totalPrice);
         return new Receipt(cartItems, promotionCount, membershipDiscount);
@@ -43,6 +48,7 @@ public class Seller {
                 continue;
             }
 
+            System.out.println(cartItem.getName());
             Product sellProduct = inventory.findByName(cartItem.getName());
             sellProduct.reduceRegularStock(cartItem.getQuantity());
         }
@@ -59,9 +65,7 @@ public class Seller {
                                       int membershipDiscount, int totalPrice) {
         if (membership.equals("Y")) {
             int promotionPrice = cartItems.stream()
-                    .mapToInt(cartItem -> promotionCount.values().stream()
-                            .mapToInt(integer -> calculatePromotionPrice(cartItem, integer))
-                            .sum())
+                    .mapToInt(cartItem -> calculatePromotionPrice(cartItem, promotionCount.getOrDefault(cartItem.getName(), 0)))
                     .sum();
             membershipDiscount = applyMembershipDiscount(totalPrice - promotionPrice);
         }
@@ -70,6 +74,7 @@ public class Seller {
 
     private int calculatePromotionPrice(CartItem cartItem, int promotionCount) {
         if (cartItem.hasPromotion()) {
+            System.out.println(cartItem.getName() + " " + promotionCount);
             return cartItem.calculatePrice(promotionCount);
         }
         return 0;
