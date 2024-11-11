@@ -34,10 +34,10 @@ public class ReceiptOutputView {
     }
 
     private void printReceiptEndInformation(Receipt receipt) {
-        System.out.printf("%s\t\t\t%,d\t\t%,6d%n", TOTAL_PRICE, receipt.getTotalCount(), receipt.getTotalPrice());
+        System.out.printf("%s\t\t\t%,d\t\t%,6d%n", TOTAL_PRICE, receipt.getTotalCount(), receipt.calculateTotalPrice());
         System.out.printf("%s\t\t\t\t\t-%,d%n", PROMOTION_DISCOUNT, receipt.totalPromotionPrice());
         System.out.printf("%s\t\t\t\t\t-%,d%n", MEMBERSHIP_DISCOUNT, receipt.getMembershipDiscount());
-        System.out.printf("%s\t\t\t\t\t%,6d%n", RECEIVE_PRICE, receipt.getTotalPrice() - receipt.getMembershipDiscount() - receipt.totalPromotionPrice());
+        System.out.printf("%s\t\t\t\t\t%,6d%n", RECEIVE_PRICE, receipt.calculateTotalPrice() - receipt.getMembershipDiscount() - receipt.totalPromotionPrice());
     }
 
     private void printFreeProducts(Receipt receipt) {

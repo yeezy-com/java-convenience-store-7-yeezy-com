@@ -8,27 +8,23 @@ public class Receipt {
 
     private final List<CartItem> product;
     private final Map<String, Integer> promotionCount;
-    private final int totalPrice;
     private final int membershipDiscount;
 
     public Receipt(List<CartItem> product, Map<String, Integer> promotionCount, int membershipDiscount) {
         this.product = product;
         this.membershipDiscount = membershipDiscount;
         this.promotionCount = promotionCount;
-        this.totalPrice = product.stream()
-                .mapToInt(CartItem::calculatePrice)
-                .sum();
-
     }
 
     public int totalPromotionPrice() {
         return product.stream()
                 .filter(CartItem::hasPromotion)
-                .mapToInt(cartItem -> getSum(cartItem, promotionCount.getOrDefault(cartItem.getName(), 0)))
+                .mapToInt(cartItem -> calculatePromotionDiscountPrice(cartItem,
+                        promotionCount.getOrDefault(cartItem.getName(), 0)))
                 .sum();
     }
 
-    private int getSum(CartItem cartItem, int promotionCount) {
+    private int calculatePromotionDiscountPrice(CartItem cartItem, int promotionCount) {
         if (cartItem.hasPromotion()) {
             return promotionCount * cartItem.getPrice();
         }
@@ -39,8 +35,10 @@ public class Receipt {
         return product;
     }
 
-    public int getTotalPrice() {
-        return totalPrice;
+    public int calculateTotalPrice() {
+        return product.stream()
+                .mapToInt(CartItem::calculatePrice)
+                .sum();
     }
 
     public int getMembershipDiscount() {

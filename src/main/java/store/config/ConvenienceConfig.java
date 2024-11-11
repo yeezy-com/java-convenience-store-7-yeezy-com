@@ -2,14 +2,13 @@ package store.config;
 
 import camp.nextstep.edu.missionutils.DateTimes;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import store.controller.Convenience;
 import store.domain.Date;
+import store.domain.Membership;
 import store.util.FileConverter;
 import store.util.MdFileReader;
 import store.controller.ConvenienceInputIterator;
 import store.controller.InputIterator;
-import store.domain.seller.Pos;
 import store.domain.seller.Seller;
 import store.domain.inventory.Inventory;
 import store.domain.product.FileFactory;
@@ -31,12 +30,12 @@ public class ConvenienceConfig {
     private FileConverter fileConverter;
     private FileFactory fileFactory;
     private Convenience convenience;
+    private Membership membership;
 
     private Date date;
     private Seller seller;
     private Inventory inventory;
     private PromotionManager promotionManager;
-    private Pos pos;
 
     private PromotionManager promotionManager() {
         if (this.promotionManager == null) {
@@ -52,13 +51,6 @@ public class ConvenienceConfig {
         return this.inventory;
     }
 
-    private Pos pos() {
-        if (this.pos == null) {
-            this.pos = new Pos(promotionManager());
-        }
-        return this.pos;
-    }
-
     private LocalDate now() {
         return DateTimes.now().toLocalDate();
     }
@@ -72,7 +64,7 @@ public class ConvenienceConfig {
 
     private Seller seller() {
         if (this.seller == null) {
-            this.seller = new Seller(convenienceInputIterator(), pos(), date());
+            this.seller = new Seller(convenienceInputIterator(), membership(), date());
         }
         return this.seller;
     }
@@ -139,6 +131,13 @@ public class ConvenienceConfig {
             this.fileFactory = new FileFactory(mdFileReader(), fileConverter());
         }
         return fileFactory;
+    }
+
+    private Membership membership() {
+        if (this.membership == null) {
+            this.membership = new Membership(convenienceInputIterator());
+        }
+        return this.membership;
     }
 
     public Convenience convenience() {

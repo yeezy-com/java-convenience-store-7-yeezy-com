@@ -1,6 +1,5 @@
 package store.controller;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import store.domain.inventory.CartItem;
@@ -28,31 +27,33 @@ public class ConvenienceInputIterator {
     public List<CartItem> buyingProductInput(Inventory inventory) {
         return inputIterator.retryUntilSuccess(() -> {
             String[] rawProducts = inputView.readItem().split(",", -1);
-            Arrays.stream(rawProducts)
-                    .forEach(this::validateFormat);
-            Arrays.stream(rawProducts)
-                    .forEach(this::validateIsBlank);
+            validateFormat(rawProducts);
+            return Arrays.stream(rawProducts)
+                    .map(rawProduct1 -> {
+                        String[] parts = rawProduct1.substring(1, rawProduct1.length() - 1).split("-", 2);
+                        String productName = parts[0];
+                        validateNumber(parts[1]);
+                        int productCount = Integer.parseInt(parts[1]);
+                        validateProductContainInInventory(inventory, productName);
+                        validateStockCountInInventory(inventory, productName, productCount);
 
-
-
-
-
-
-            List<CartItem> products = new ArrayList<>();
-            for (String rawProduct : rawProducts) {
-                String[] parts = rawProduct.substring(1, rawProduct.length() - 1).split("-", 2);
-                String productName = parts[0];
-                validateIsConvertNumber(parts[1]);
-                validateIsPositive(parts[1]);
-                int productCount = Integer.parseInt(parts[1]);
-                validateProductContainInInventory(inventory, productName);
-                validateStockCountInInventory(inventory, productName, productCount);
-
-                Product sellProduct = inventory.findByName(productName);
-                products.add(new CartItem(sellProduct, productCount));
-            }
-            return products;
+                        Product sellProduct1 = inventory.findByName(productName);
+                        return new CartItem(sellProduct1, productCount);
+                    })
+                    .toList();
         });
+    }
+
+    private void validateFormat(String[] rawProducts) {
+        Arrays.stream(rawProducts)
+                .forEach(this::validateFormat);
+        Arrays.stream(rawProducts)
+                .forEach(this::validateIsBlank);
+    }
+
+    private void validateNumber(String rawNumber) {
+        validateIsConvertNumber(rawNumber);
+        validateIsPositive(rawNumber);
     }
 
     public String readMembershipApply() {

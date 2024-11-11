@@ -3,8 +3,8 @@ package store.domain.seller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import store.domain.Date;
+import store.domain.Membership;
 import store.domain.Receipt;
 import store.controller.ConvenienceInputIterator;
 import store.domain.inventory.CartItem;
@@ -15,29 +15,31 @@ import store.domain.promotion.Promotion;
 public class Seller {
 
     private final ConvenienceInputIterator convenienceInputIterator;
-    private final Pos pos;
+    private final Membership membership;
     private final Date date;
 
-    public Seller(ConvenienceInputIterator convenienceInputIterator, Pos pos, Date date) {
+    public Seller(ConvenienceInputIterator convenienceInputIterator, Membership membership, Date date) {
         this.convenienceInputIterator = convenienceInputIterator;
-        this.pos = pos;
+        this.membership = membership;
         this.date = date;
     }
 
     public Receipt processPurchase(Inventory inventory) {
         List<CartItem> cartItems = convenienceInputIterator.buyingProductInput(inventory);
-        int membershipDiscount = 0;
 
         Map<String, Integer> promotionCount = calculatePromotionCount(inventory, cartItems);
-        for (Entry<String, Integer> entry : promotionCount.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue() + "개 구매");
-        }
-
         int totalPrice = calculateTotalPrice(cartItems);
-        System.out.println(totalPrice);
-        String membershipAnswer = convenienceInputIterator.readMembershipApply();
-        membershipDiscount = calculateMembershipDiscount(membershipAnswer, cartItems, promotionCount, membershipDiscount, totalPrice);
+        int promotionPrice = calculatePromotionPrice(cartItems, promotionCount);
+
+        int membershipDiscount = membership.membershipProcess(totalPrice, promotionPrice);
         return new Receipt(cartItems, promotionCount, membershipDiscount);
+    }
+
+    private int calculatePromotionPrice(List<CartItem> cartItems, Map<String, Integer> promotionCount) {
+        return cartItems.stream()
+                .mapToInt(cartItem -> calculatePromotionPrice(cartItem,
+                        promotionCount.getOrDefault(cartItem.getName(), 0)))
+                .sum();
     }
 
     private Map<String, Integer> calculatePromotionCount(Inventory inventory, List<CartItem> cartItems) {
@@ -47,39 +49,24 @@ public class Seller {
                 promotionCount.put(cartItem.getName(), applyPromotion(cartItem, inventory));
                 continue;
             }
-
-            System.out.println(cartItem.getName());
             Product sellProduct = inventory.findByName(cartItem.getName());
             sellProduct.reduceRegularStock(cartItem.getQuantity());
         }
         return promotionCount;
     }
 
-    private static int calculateTotalPrice(List<CartItem> cartItems) {
+    private int calculateTotalPrice(List<CartItem> cartItems) {
         return cartItems.stream()
                 .mapToInt(CartItem::calculatePrice)
                 .sum();
     }
 
-    private int calculateMembershipDiscount(String membership, List<CartItem> cartItems, Map<String, Integer> promotionCount,
-                                      int membershipDiscount, int totalPrice) {
-        if (membership.equals("Y")) {
-            int promotionPrice = cartItems.stream()
-                    .mapToInt(cartItem -> calculatePromotionPrice(cartItem, promotionCount.getOrDefault(cartItem.getName(), 0)))
-                    .sum();
-            membershipDiscount = applyMembershipDiscount(totalPrice - promotionPrice);
-        }
-        return membershipDiscount;
-    }
-
     private int calculatePromotionPrice(CartItem cartItem, int promotionCount) {
         if (cartItem.hasPromotion()) {
-            System.out.println(cartItem.getName() + " " + promotionCount);
             return cartItem.calculatePrice(promotionCount);
         }
         return 0;
     }
-
 
     // return 값은 증정 상품 갯수
     private int applyPromotion(CartItem cartItem, Inventory inventory) {
@@ -92,7 +79,7 @@ public class Seller {
 
         int quantity = cartItem.getQuantity();
         if (quantity < product.getTotalStock() && quantity % promotionCount == promotion.getStandardCount()) {
-            if (pos.isY(convenienceInputIterator.readWantPromotion(product.getName()))) {
+            if (convenienceInputIterator.readWantPromotion(product.getName()).equals("Y")) {
                 quantity++;
                 cartItem.plusQuantity();
             }
@@ -126,10 +113,5 @@ public class Seller {
         }
 
         return gift;
-    }
-
-    private int applyMembershipDiscount(int totalPrice) {
-        int membershipDiscount = totalPrice * 30 / 100;
-        return Math.min(membershipDiscount, 8000);
     }
 }
