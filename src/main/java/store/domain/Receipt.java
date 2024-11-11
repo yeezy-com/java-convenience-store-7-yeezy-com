@@ -24,7 +24,7 @@ public class Receipt {
     public int totalPromotionPrice() {
         return product.stream()
                 .filter(CartItem::hasPromotion)
-                .mapToInt(cartItem -> getSum(cartItem, promotionCount.get(cartItem.getName())))
+                .mapToInt(cartItem -> getSum(cartItem, promotionCount.getOrDefault(cartItem.getName(), 0)))
                 .sum();
     }
 
